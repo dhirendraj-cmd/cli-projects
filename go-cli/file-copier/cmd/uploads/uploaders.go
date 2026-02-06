@@ -43,7 +43,7 @@ func MoveFiles(){
 
 	homePath, _ := os.UserHomeDir()
 
-	srcDir := filepath.Join(homePath, "uploadtesting/src")
+	srcDir := filep ath.Join(homePath, "uploadtesting/src")
 	destDir := filepath.Join(homePath, "uploadtesting/dest")
 
 	// copyExactFiles(srcDir, destDir)
