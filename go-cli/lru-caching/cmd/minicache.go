@@ -52,6 +52,7 @@ func (d *Doubly) IsEmpty() bool{
 func (d *Doubly) AddInBeginning(node *Node){
 	if d.IsEmpty(){
 		d.headNode = node
+		d.tailNode = node
 		node.Next = nil
 		node.Prev = nil
 		return
@@ -59,7 +60,11 @@ func (d *Doubly) AddInBeginning(node *Node){
 
 	node.Prev = nil
 	node.Next = d.headNode
-	d.headNode.Prev = node
+
+	if d.headNode != nil {
+        d.headNode.Prev = node
+    }
+
 	d.headNode = node
 }
 
@@ -94,15 +99,15 @@ func (lru *LRUCache) Put(key int, val any) {
 	// checking if key already exists
 	if node, ok := lru.CacheDict[key]; ok{
 		node.Val = val
-		lru.List.RemoveStaleNode(node)
-        lru.List.AddInBeginning(node)
-		return
+		lru.List.MovetoFront(node)
+	} else {
+
+		// checking if new key and mapping
+		newNode := NewNode(key, val)
+		lru.List.AddInBeginning(newNode)
+		lru.CacheDict[key] = newNode
 	}
 
-	// checking if new key and mapping
-	newNode := NewNode(key, val)
-	lru.List.AddInBeginning(newNode)
-	lru.CacheDict[key] = newNode
 
 	// checking if size > Capacity
 	if len(lru.CacheDict) > lru.Capacity{
@@ -114,16 +119,17 @@ func (lru *LRUCache) Put(key int, val any) {
 		}
 	}
 
-	for k, v := range lru.CacheDict{
-		fmt.Printf("Key: %v, Value: %v\n", k, v.Val)
-	}
-
+	// for k, v := range lru.CacheDict{
+	// 	fmt.Printf("Key: %v, Value: %v\n", k, v.Val)
+	// }
+	lru.PrintCache()
 }
 
 func (lru *LRUCache) Get(key int) (any, bool){
 	if node, ok := lru.CacheDict[key]; ok{
 		lru.List.MovetoFront(node)
 		fmt.Println("Key Found: ", node.Val)
+		lru.PrintCache()
 		return node.Val, true
 	}
 
@@ -131,6 +137,14 @@ func (lru *LRUCache) Get(key int) (any, bool){
 	return "-1", false
 }
 
+func (lru *LRUCache) PrintCache(){
+	temp := lru.List.headNode
+	for temp != nil {
+		fmt.Printf("[%v: %v] <-> ", temp.Key, temp.Val)
+		temp = temp.Next
+	}
+	fmt.Println("nil")
+}
 
 
 
@@ -143,5 +157,6 @@ func MiniLRUCache(){
 	lru.Put(3, "C")
 	
 	lru.Get(2)
-	lru.Put(4, "C")
+	// lru.Put(4, "E")
+	lru.Put(2, "D")
 }
