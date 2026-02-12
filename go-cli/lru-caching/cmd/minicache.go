@@ -1,6 +1,9 @@
 package cmd
 
-import "fmt"
+import (
+	"fmt"
+	"sync"
+)
 
 
 type Node struct{
@@ -35,6 +38,7 @@ type LRUCache struct{
 	Capacity int
 	CacheDict map[any]*Node
 	List *Doubly
+	mu sync.Mutex
 }
 
 func NewLRUCache(capacity int) *LRUCache{
@@ -96,6 +100,9 @@ func (d *Doubly) MovetoFront(node *Node){
 }
 
 func (lru *LRUCache) Put(key int, val any) {
+	lru.mu.Lock()
+	defer lru.mu.Unlock()
+	
 	// checking if key already exists
 	if node, ok := lru.CacheDict[key]; ok{
 		node.Val = val
@@ -126,6 +133,9 @@ func (lru *LRUCache) Put(key int, val any) {
 }
 
 func (lru *LRUCache) Get(key int) (any, bool){
+	lru.mu.Lock()
+	defer lru.mu.Unlock()
+
 	if node, ok := lru.CacheDict[key]; ok{
 		lru.List.MovetoFront(node)
 		fmt.Println("Key Found: ", node.Val)
@@ -138,6 +148,8 @@ func (lru *LRUCache) Get(key int) (any, bool){
 }
 
 func (lru *LRUCache) PrintCache(){
+	// defer lru.mu.Unlock()
+	// lru.mu.Lock()
 	temp := lru.List.headNode
 	for temp != nil {
 		fmt.Printf("[%v: %v] <-> ", temp.Key, temp.Val)
@@ -151,12 +163,26 @@ func (lru *LRUCache) PrintCache(){
 func MiniLRUCache(){
 	fmt.Println("Implementing Mini Cache!!!")
 
-	lru := NewLRUCache(3)
-	lru.Put(1, "A")
-	lru.Put(2, "B")
-	lru.Put(3, "C")
-	
-	lru.Get(2)
-	// lru.Put(4, "E")
-	lru.Put(2, "D")
+	var wg sync.WaitGroup
+
+	lru := NewLRUCache(110)
+
+	for i := 0; i <= 100; i++ {
+		wg.Add(1)
+		go func (i int)  {
+			defer wg.Done()
+			lru.Put(i+1, string(rune(i+65)))
+		}(i)
+	}
+
+	for i := 0; i <= 50; i++ {
+		wg.Add(1)
+		go func (i int)  {
+			defer wg.Done()
+			lru.Get(i)
+		}(i)
+		i+=5
+	}
+
+	wg.Wait()
 }
