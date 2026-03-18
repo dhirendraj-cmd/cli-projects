@@ -7,8 +7,8 @@ import (
 
 
 func (c *LRUCache) Set(key any, val any, ttl int64) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
+	c.mu.RLock()
+	defer c.mu.RUnlock()
 
 	// calculate expiry time
 	expiresAt := time.Now().Unix() + ttl
@@ -48,3 +48,5 @@ func (c *LRUCache) Set(key any, val any, ttl int64) {
 	}
 
 }
+
+
