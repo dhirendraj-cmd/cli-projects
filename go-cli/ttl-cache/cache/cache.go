@@ -12,6 +12,8 @@ type EntryCache struct{
 	expiresAt int64
 }
 
+
+// management cache using lru patern(may change the name as it is more of a manager than just lruy)
 type LRUCache struct{
 	Capacity int
 	Items map[any]*list.Element
@@ -19,6 +21,7 @@ type LRUCache struct{
 	EvictList *list.List
 }
 
+// constructore for lru
 func NewLRUCache(capacity int) *LRUCache{
 	return &LRUCache{
 		Capacity: capacity,
