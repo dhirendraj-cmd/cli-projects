@@ -14,7 +14,7 @@ type EntryCache struct{
 
 type LRUCache struct{
 	Capacity int
-	Items map[string]*list.Element
+	Items map[any]*list.Element
 	mu sync.RWMutex
 	EvictList *list.List
 }
@@ -22,7 +22,7 @@ type LRUCache struct{
 func NewLRUCache(capacity int) *LRUCache{
 	return &LRUCache{
 		Capacity: capacity,
-		Items: make(map[string]*list.Element),
+		Items: make(map[any]*list.Element),
 		EvictList: list.New(),
 	}
 }
