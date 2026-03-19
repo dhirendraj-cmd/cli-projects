@@ -11,7 +11,8 @@ func (c *LRUCache) Set(key any, val any, ttl int64) {
 	defer c.mu.RUnlock()
 
 	// calculate expiry time
-	expiresAt := time.Now().Unix() + ttl
+	// expiresAt := time.Now().Unix() + ttl
+	expiresAt := time.Now().Add(time.Duration(ttl) * time.Second).UnixNano()
 
 	// check if key exists
 	if element, ok := c.Items[key]; ok{
@@ -46,7 +47,6 @@ func (c *LRUCache) Set(key any, val any, ttl int64) {
 			delete(c.Items, kv.key)
 		}
 	}
-	c.Show()
 }
 
 
@@ -54,7 +54,7 @@ func (c *LRUCache) Get(key any) (any, bool){
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	currentTime := time.Now().Unix()
+	currentTime := time.Now().UnixNano()
 
 	// element ka check karte hain exist karta hai k nhi
 	if element, ok := c.Items[key]; ok{
@@ -72,7 +72,7 @@ func (c *LRUCache) Get(key any) (any, bool){
 
 		// LRU check 
 		c.EvictList.MoveToFront(element)
-		fmt.Println("Data Found >>> ", element.Value.(*EntryCache))
+		fmt.Println("Data Found >>> ", element.Value.(*EntryCache).value)
 		return element.Value, true
 	}
 
