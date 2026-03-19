@@ -13,6 +13,7 @@ func main(){
 	lru.Set(2, "BC", 50)
 	lru.Set(3, "CD", 50)
 	lru.Set(4, "DE", 30)
+	lru.Show()
 
 	fmt.Println("GET DATA >>>>>>> ")
 	lru.Get(3)
