@@ -33,7 +33,7 @@ func (c *LRUCache) Set(key any, val any, ttl int64) {
 	newElement := c.EvictList.PushFront(newEntry)
 	c.Items[key] = newElement
 
-	// check if size > capacity
+	// check if map ka size > capacity
 	if len(c.Items) > c.Capacity{
 		fmt.Println("Size limmit Exceeded!")
 		lastNode := c.EvictList.Back()
@@ -46,7 +46,46 @@ func (c *LRUCache) Set(key any, val any, ttl int64) {
 			delete(c.Items, kv.key)
 		}
 	}
-
+	c.Show()
 }
 
+
+func (c *LRUCache) Get(key any) (any, bool){
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	currentTime := time.Now().Unix()
+
+	// element ka check karte hain exist karta hai k nhi
+	if element, ok := c.Items[key]; ok{
+		// TTL check happening
+		enteredData := element.Value.(*EntryCache)
+
+		// yaha se we check TTl expiry first
+		// Lazy Expiry using for now
+		if currentTime > enteredData.expiresAt{
+			fmt.Println("Data Expired>>>>")
+			c.EvictList.Remove(element)
+			delete(c.Items, key)
+			return nil, false
+		}
+
+		// LRU check 
+		c.EvictList.MoveToFront(element)
+		fmt.Println("Data Found >>> ", element.Value.(*EntryCache))
+		return element.Value, true
+	}
+
+	fmt.Println("Data Does not Exist!!")
+	return "-1",  false
+}
+
+
+func (c *LRUCache) Show(){
+	for e:=c.EvictList.Front(); e!=nil; e=e.Next(){
+		data := e.Value.(*EntryCache)
+		fmt.Printf("[%v: %v] <-> ", data.key, data.value)
+	}
+	fmt.Println("nil")
+}
 
