@@ -72,10 +72,13 @@ func (c *LRUCache) Get(key any) (any, bool){
 
 		// LRU check 
 		c.EvictList.MoveToFront(element)
+		
+		fmt.Println("CACHE HIT")
 		fmt.Println("Data Found >>> ", element.Value.(*EntryCache).value)
 		return element.Value, true
 	}
 
+	fmt.Println("CACHE MISS")
 	fmt.Println("Data Does not Exist!!")
 	return "-1",  false
 }
