@@ -8,15 +8,19 @@ import (
 
 
 type EntryCache struct{
-	key any
+	key string
 	value any
 	expiresAt int64
-	index int
 }
 
+type ExpiryItem struct {
+	key       string
+	expiresAt int64
+	index     int
+}
 
 // heapify in go
-type ExpiryHeap []*EntryCache
+type ExpiryHeap []*ExpiryItem
 
 func (eh ExpiryHeap) Len() int { return len(eh)}
 
@@ -35,7 +39,7 @@ func (eh ExpiryHeap) Swap(i, j int) {
 // push to heap
 func (eh *ExpiryHeap) Push(x any){
 	n := len(*eh)
-	item := x.(*EntryCache)
+	item := x.(*ExpiryItem)
 	item.index = n
 	*eh = append(*eh, item)
 }
@@ -53,20 +57,19 @@ func (eh *ExpiryHeap) Pop() any{
 }
 
 // fix min heap after expiry
-func (eh *ExpiryHeap) update(item *EntryCache, value any, expiresAt int64){
-	item.value = value
+func (eh *ExpiryHeap) Update(item *ExpiryItem, expiresAt int64){
 	item.expiresAt = expiresAt
-
 	heap.Fix(eh, item.index)
 }
 
 // management cache using lru patern(may change the name as it is more of a manager than just lruy)
 type LRUCache struct{
 	Capacity int
-	Items map[any]*list.Element
+	Items map[string]*list.Element
 	mu sync.RWMutex
 	EvictList *list.List
 	Expiration *ExpiryHeap
+	HeapItems map[string]*ExpiryItem
 }
 
 // constructore for lru
@@ -75,9 +78,10 @@ func NewLRUCache(capacity int) *LRUCache{
 	heap.Init(h)
 	return &LRUCache{
 		Capacity: capacity,
-		Items: make(map[any]*list.Element),
+		Items: make(map[string]*list.Element),
 		EvictList: list.New(),
 		Expiration: h,
+		HeapItems: make(map[string]*ExpiryItem),
 	}
 
 }
