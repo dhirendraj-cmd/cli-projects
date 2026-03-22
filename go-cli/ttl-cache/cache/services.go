@@ -6,7 +6,7 @@ import (
 )
 
 
-func (c *LRUCache) Set(key any, val any, ttl int64) {
+func (c *LRUCache) Set(key string, val any, ttl int64) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 
@@ -50,7 +50,7 @@ func (c *LRUCache) Set(key any, val any, ttl int64) {
 }
 
 
-func (c *LRUCache) Get(key any) (any, bool){
+func (c *LRUCache) Get(key string) (any, bool){
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -72,7 +72,7 @@ func (c *LRUCache) Get(key any) (any, bool){
 
 		// LRU check 
 		c.EvictList.MoveToFront(element)
-		
+
 		fmt.Println("CACHE HIT")
 		fmt.Println("Data Found >>> ", element.Value.(*EntryCache).value)
 		return element.Value, true
