@@ -4,21 +4,38 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"os/signal"
 	"strconv"
 	"strings"
-
+	"syscall"
+	"time"
 	"github.com/dhirendraj-cmd/cli-projects/tree/main/go-cli/ttl-Cache/cache"
 )
 
 func main(){
 	fmt.Println("CLI Based TTL Cache")
 	// cache.MiniTTLLRUCache()
-	miniCache := cache.NewLRUCache(5)
 
-	scanner := bufio.NewScanner(os.Stdin)
+	stopChan := make(chan struct{})
+	miniCache := cache.NewLRUCache(5, stopChan)
+
+	// wait till program exit
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
 
 	fmt.Println("TTL Cache CLI Started (Type 'exit' to quit)")
 	fmt.Println("Commands: set <key> <val> <ttl_seconds>, get <key>, delete <key>, show")
+
+	go func ()  {
+		// wait till ctrl+c not prerssed
+		<-sigChan
+		fmt.Println("Shutting Gracefully!!")
+		close(stopChan)
+		time.Sleep(500 * time.Millisecond)
+		os.Exit(0)
+	}()
+
+	scanner := bufio.NewScanner(os.Stdin)
 
 	for {
 		fmt.Print("> ")
@@ -73,9 +90,6 @@ func main(){
 		default:
 			fmt.Println("❓ Unknown command. Try: set, get, delete, show, exit")
 		}
-
-		
-
 	}
 
 }

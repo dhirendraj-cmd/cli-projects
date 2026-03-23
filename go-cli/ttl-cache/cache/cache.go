@@ -74,10 +74,10 @@ type LRUCache struct{
 }
 
 // constructore for lru
-func NewLRUCache(capacity int) *LRUCache{
+func NewLRUCache(capacity int, stopChan chan struct{}) *LRUCache{
 	h := &ExpiryHeap{}
 	heap.Init(h)
-	return &LRUCache{
+	c := &LRUCache{
 		Capacity: capacity,
 		Items: make(map[string]*list.Element),
 		EvictList: list.New(),
@@ -85,5 +85,7 @@ func NewLRUCache(capacity int) *LRUCache{
 		HeapItems: make(map[string]*ExpiryItem),
 	}
 
+	go c.BackgroundEviction(stopChan)
+	return c
 }
 
