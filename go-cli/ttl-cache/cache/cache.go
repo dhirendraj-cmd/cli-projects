@@ -11,6 +11,7 @@ type EntryCache struct{
 	key string
 	value any
 	expiresAt int64
+	expiryRef *ExpiryItem
 }
 
 type ExpiryItem struct {
@@ -56,7 +57,7 @@ func (eh *ExpiryHeap) Pop() any{
 	return item
 }
 
-// fix min heap after expiry
+// fix min heap after update
 func (eh *ExpiryHeap) Update(item *ExpiryItem, expiresAt int64){
 	item.expiresAt = expiresAt
 	heap.Fix(eh, item.index)
@@ -85,3 +86,4 @@ func NewLRUCache(capacity int) *LRUCache{
 	}
 
 }
+
