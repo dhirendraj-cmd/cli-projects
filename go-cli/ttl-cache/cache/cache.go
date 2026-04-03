@@ -64,7 +64,7 @@ func (eh *ExpiryHeap) Update(item *ExpiryItem, expiresAt int64){
 }
 
 // management cache using lru patern(may change the name as it is more of a manager than just lruy)
-type LRUCache struct{
+type CacheManager struct{
 	Capacity int
 	Items map[string]*list.Element
 	mu sync.RWMutex
@@ -74,10 +74,10 @@ type LRUCache struct{
 }
 
 // constructore for lru
-func NewLRUCache(capacity int, stopChan chan struct{}) *LRUCache{
+func NewCacheManager(capacity int, stopChan chan struct{}) *CacheManager{
 	h := &ExpiryHeap{}
 	heap.Init(h)
-	c := &LRUCache{
+	c := &CacheManager{
 		Capacity: capacity,
 		Items: make(map[string]*list.Element),
 		EvictList: list.New(),

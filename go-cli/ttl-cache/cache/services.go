@@ -7,7 +7,7 @@ import (
 )
 
 
-func (c *LRUCache) Set(key string, val any, ttl int64) {
+func (c *CacheManager) Set(key string, val any, ttl int64) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -63,7 +63,10 @@ func (c *LRUCache) Set(key string, val any, ttl int64) {
 		if lastNode != nil{
 			// remove from heap
 			kv := lastNode.Value.(*EntryCache)
-			heap.Remove(c.Expiration, kv.expiryRef.index)
+
+			if kv.expiryRef != nil{
+				heap.Remove(c.Expiration, kv.expiryRef.index)
+			}
 			// remove from list
 			c.EvictList.Remove(lastNode)
 
@@ -74,7 +77,7 @@ func (c *LRUCache) Set(key string, val any, ttl int64) {
 }
 
 
-func (c *LRUCache) Get(key string) (any, bool){
+func (c *CacheManager) Get(key string) (any, bool){
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -117,7 +120,7 @@ func (c *LRUCache) Get(key string) (any, bool){
 }
 
 
-func (c *LRUCache) Show(){
+func (c *CacheManager) Show(){
 	for e:=c.EvictList.Front(); e!=nil; e=e.Next(){
 		data := e.Value.(*EntryCache)
 		fmt.Printf("[%v: %v] <-> ", data.key, data.value)
