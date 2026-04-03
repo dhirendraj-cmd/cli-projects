@@ -14,10 +14,23 @@ import (
 
 func main(){
 	fmt.Println("CLI Based TTL Cache")
-	// cache.MiniTTLLRUCache()
+	fmt.Println()
+
+	scanner := bufio.NewScanner(os.Stdin)
+
+	fmt.Print("Enter Capacity: ")
+	scanner.Scan()
+
+	strCap := scanner.Text()
+
+	intCap, err := strconv.Atoi(strCap)
+
+	if err != nil{
+		return
+	}
 
 	stopChan := make(chan struct{})
-	miniCache := cache.NewCacheManager(5, stopChan)
+	miniCache := cache.NewCacheManager(intCap, stopChan)
 
 	// wait till program exit
 	sigChan := make(chan os.Signal, 1)
@@ -34,8 +47,6 @@ func main(){
 		time.Sleep(500 * time.Millisecond)
 		os.Exit(0)
 	}()
-
-	scanner := bufio.NewScanner(os.Stdin)
 
 	for {
 		fmt.Print("> ")
