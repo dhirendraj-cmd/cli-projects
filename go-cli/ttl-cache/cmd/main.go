@@ -17,7 +17,7 @@ func main(){
 	// cache.MiniTTLLRUCache()
 
 	stopChan := make(chan struct{})
-	miniCache := cache.NewLRUCache(5, stopChan)
+	miniCache := cache.NewCacheManager(5, stopChan)
 
 	// wait till program exit
 	sigChan := make(chan os.Signal, 1)
@@ -88,7 +88,7 @@ func main(){
 			miniCache.Show()
 
 		default:
-			fmt.Println("❓ Unknown command. Try: set, get, delete, show, exit")
+			fmt.Println("?? Unknown command. Try: set, get, delete, show, exit")
 		}
 	}
 

@@ -7,44 +7,55 @@ import (
 )
 
 
-func (c *LRUCache) BackgroundEviction(stopChan chan struct{}){
+func (c *CacheManager) BackgroundEviction(stopChan chan struct{}){
 	ticker := time.NewTicker(1 * time.Second)
 	defer ticker.Stop()
 
-		for {
-			select {
-			case <- ticker.C:
-				c.mu.Lock()
-				c.mu.Unlock()
-				currentTime := time.Now().UnixNano()
+	for {
+		select {
+		case <- ticker.C:
+			c.evictExpiredItems() // seperate scoped function to handle locking correctly
 
-				for c.Expiration.Len() > 0{
-					// peek at root which is at index 0
-					root := (*c.Expiration)[0]
-
-					if currentTime < root.expiresAt{
-						break
-					}
-
-					// if currenttime > expires time
-					expiredItem := heap.Pop(c.Expiration).(*ExpiryItem)
-
-					// need to remove from map and list both
-					if ele, ok := c.Items[expiredItem.key]; ok{
-						// remove from list(lru)
-						c.EvictList.Remove(ele)
-
-						// delete from dictionary also
-						delete(c.Items, expiredItem.key)
-						fmt.Println("Background: Cleaned up >> ", expiredItem.key)
-					}
-				}
-			
-			case <- stopChan:
-				fmt.Println("Stopping the background cleanup process gracefully!")
-				return
-			}
-			
+		case <- stopChan:
+			fmt.Println("Stopping the background cleanup process gracefully!")
+			return
 		}
+		
+	}
+}
+
+
+func(c *CacheManager) evictExpiredItems(){
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	currentTime := time.Now().UnixNano()
+	evictCount := 0
+	maxEvictionsPerBatch := 100 // prevent loading for too long so blocking doesn't happen
+
+	for c.Expiration.Len() > 0{
+		// limit batch size to keep the cache responsive
+		if evictCount > maxEvictionsPerBatch { break }
+
+		// peak at root which is at index 0
+		root := (*c.Expiration)[0]
+
+		if currentTime < root.expiresAt { break }
+
+		// expired < currenttime
+		expiredItem := heap.Pop(c.Expiration).(*ExpiryItem)
+
+		// remove from map and DLL both
+		if ele, ok := c.Items[expiredItem.key]; ok{
+
+			// remove from list
+			c.EvictList.Remove(ele)
+
+			// remove from map
+			delete(c.Items, expiredItem.key)
+			fmt.Println("Background: Cleaned up >> ", expiredItem.key)
+		}
+	}
+
 }
 
