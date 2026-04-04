@@ -18,6 +18,7 @@ func (c *CacheManager) Set(key string, val any, ttl int64) {
 	// check if key exists
 	if element, ok := c.Items[key]; ok{
 
+		fmt.Println("Updating the entry for: ", key)
 		// update data
 		ent := element.Value.(*EntryCache)
 		ent.value = val
@@ -123,7 +124,10 @@ func (c *CacheManager) Get(key string) (any, bool){
 func (c *CacheManager) Show(){
 	for e:=c.EvictList.Front(); e!=nil; e=e.Next(){
 		data := e.Value.(*EntryCache)
-		fmt.Printf("[%v: %v] <-> ", data.key, data.value)
+		conNow := time.Now().UnixNano()
+		remNano := data.expiresAt - conNow
+		remSecs := remNano / int64(time.Second)
+		fmt.Printf("[%v: %v: %vs] <-> ", data.key, data.value, remSecs)
 	}
 	fmt.Println("nil")
 }
